@@ -29,6 +29,7 @@ classDiagram
     class Scheduler {
         +list~Task~ tasks
         +int available_minutes
+        +for_pet(owner Owner, pet Pet) Scheduler$
         +sort_tasks() list~Task~
         +generate_plan() list~Task~
         +explain() str
@@ -37,3 +38,5 @@ classDiagram
     Owner "1" --> "*" Pet : has
     Pet "1" --> "*" Task : has
     Scheduler ..> Task : schedules
+    Scheduler ..> Owner : reads minutes
+    Scheduler ..> Pet : reads tasks
