@@ -228,3 +228,45 @@ def test_build_timeline_anchors_fixed_time_and_avoids_overlap():
 
     assert at["Meds"] == "08:00"
     assert at["Walk"] == "08:15"  # jumped past the fixed 08:00–08:15 block
+
+
+# --- edge cases: empty / no-task inputs -------------------------------------
+def test_pet_with_no_tasks_produces_empty_plan():
+    """A pet with no tasks yields empty results everywhere, not an error."""
+    owner = Owner("Jordan", available_minutes=60)
+    owner.add_pet(Pet("Mochi", "cat"))
+    scheduler = Scheduler.for_owner(owner)
+
+    assert scheduler.generate_plan() == []
+    assert scheduler.build_timeline() == []
+    assert scheduler.find_conflicts() == []
+    assert scheduler.sort_by_time() == []
+
+
+def test_owner_with_no_pets_produces_empty_plan():
+    """An owner with no pets at all schedules nothing without crashing."""
+    scheduler = Scheduler.for_owner(Owner("Jordan", available_minutes=60))
+
+    assert scheduler.generate_plan() == []
+
+
+def test_explain_before_generate_plan_prompts_to_run_it():
+    """explain() gives a clear message when no plan has been built yet."""
+    owner = Owner("Jordan")
+    owner.add_pet(Pet("Mochi", "cat"))
+
+    message = Scheduler.for_owner(owner).explain()
+
+    assert "generate_plan()" in message
+
+
+def test_zero_available_minutes_skips_everything():
+    """With no time budget, every task is skipped and the plan is empty."""
+    owner = Owner("Jordan", available_minutes=0)
+    pet = Pet("Mochi", "cat")
+    pet.add_task(Task("Feeding", 10, priority="high"))
+    owner.add_pet(pet)
+    scheduler = Scheduler.for_owner(owner)
+
+    assert scheduler.generate_plan() == []
+    assert len(scheduler.skipped) == 1

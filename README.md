@@ -69,21 +69,43 @@ see `main.py` for the full output.)
 
 ## 🧪 Testing PawPal+
 
+Run the full automated test suite with:
+
 ```bash
-# Run the full test suite:
-pytest
+python -m pytest
 
-# Run with coverage:
-pytest --cov
+# Optional: run with coverage
+python -m pytest --cov
 ```
 
-Sample test output:
+### What the tests cover
+
+The suite (`tests/test_pawpal.py`, 21 tests) exercises both happy paths and edge cases:
+
+- **Core objects** — marking a task complete flips its status; adding a task grows a pet's list.
+- **Sorting** — `sort_by_time()` returns tasks in chronological order and pushes unscheduled tasks last.
+- **Filtering** — `filter_by_pet()` and `filter_by_status()` return the right subset; an unknown pet name yields an empty list.
+- **Recurrence** — completing a daily task creates tomorrow's instance and a weekly task next week's; one-off tasks create nothing.
+- **Conflict detection** — `find_conflicts()` flags two tasks sharing a start time and stays silent for distinct/blank times.
+- **Planning** — the greedy plan respects the time budget, skips already-completed tasks, and lays out fixed-time tasks without overlap.
+- **Edge cases** — a pet with no tasks, an owner with no pets, and a zero-minute budget all produce empty plans instead of crashing.
+
+### Sample test output
 
 ```
-tests/test_pawpal.py .................                                   [100%]
+tests/test_pawpal.py .....................                              [100%]
 
-============================== 17 passed in 0.02s ==============================
+============================== 21 passed in 0.03s ==============================
 ```
+
+### Confidence level
+
+**★★★★☆ (4/5)** — All 21 tests pass and cover the core algorithms plus the main edge cases,
+so I'm confident the logic behaves as designed. I held back the fifth star because a couple of
+known tradeoffs remain untested against real-world messiness: conflict detection only catches
+*exact* time matches (not overlapping durations, see `reflection.md` §2b), and I haven't tested
+invalid input like malformed `"HH:MM"` strings or negative durations. Those would be the next
+edge cases to cover.
 
 ## 📐 Smarter Scheduling
 
