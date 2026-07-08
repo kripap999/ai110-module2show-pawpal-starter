@@ -131,8 +131,14 @@ else:
     # Conflict detection: warn when two tasks share a scheduled time.
     conflicts = scheduler.find_conflicts()
     if conflicts:
+        st.warning(
+            "**Scheduling conflict — two tasks share a time slot.** "
+            "Give one of them a different time so you're not double-booked:"
+        )
         for message in conflicts:
-            st.warning(f"⚠️ {message}")
+            st.markdown(f"- ⚠️ {message}")
+    elif any(t.time for t in owner.all_tasks()):
+        st.success("✓ No timing conflicts — every scheduled task has its own slot.")
 
     # Mark-complete buttons. Completing a recurring task spawns its next occurrence.
     st.caption("Mark a task done — recurring tasks reappear on their next date.")
@@ -172,3 +178,7 @@ if st.button("Generate schedule"):
         ]
         st.table(rows)
         st.info(scheduler.explain())
+
+        # Surface conflicts right where the owner reads the plan.
+        for message in scheduler.find_conflicts():
+            st.warning(f"⚠️ {message} — you can only be in one place at a time.")
