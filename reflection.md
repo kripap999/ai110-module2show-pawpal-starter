@@ -36,6 +36,10 @@ Yes. AI review pointed out my `Scheduler` was disconnected: it took a raw task l
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
 
+My `Scheduler.find_conflicts()` only flags tasks that share the **exact same start time** (the same `"HH:MM"` string). It does *not* detect **overlapping durations** — a 30-minute walk at 08:00 and a feeding at 08:15 both run at once, but my code stays silent because their start strings differ. I chose the exact-match approach because it is lightweight: it buckets tasks by time in a single O(n) pass, needs no interval math, and returns plain warning strings instead of raising an error. Detecting true overlaps would mean computing each task's end time (`start + duration_minutes`), sorting the intervals, and comparing neighbors — noticeably more code and more ways to get an off-by-one wrong.
+
+This tradeoff is reasonable for a personal daily pet-care planner: the tasks are short and few, an owner is likely to enter clean, on-the-hour or half-hour times, and a missed near-overlap is a minor annoyance rather than a real failure. The exact-match check catches the most common and most obvious mistake — two things booked for the very same moment — while keeping the code simple enough to trust and easy to read. If the app ever grew to manage many pets or back-to-back appointments, upgrading to interval-based overlap detection would be the natural next step.
+
 ---
 
 ## 3. AI Collaboration
